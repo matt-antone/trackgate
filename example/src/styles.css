@@ -1,0 +1,23 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 640px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  line-height: 1.5;
+}
+
+section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+button {
+  margin-right: 0.5rem;
+}
+
+code {
+  background: #f2f2f2;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
