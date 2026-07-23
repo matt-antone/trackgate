@@ -43,6 +43,7 @@ function seedGrantedRecord() {
     policyVersion: '1',
     timestamp: new Date().toISOString(),
     method: 'dialog',
+    recordId: 'test-record-id',
   };
   window.localStorage.setItem(DEFAULT_STORAGE_KEY, JSON.stringify(record));
 }

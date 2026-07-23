@@ -1,6 +1,4 @@
-# trackgate
-
-Formerly `cipa-provider` — renamed to avoid confusion with the Children's Internet Protection Act.
+# Trackgate
 
 A React provider that gates tracking components behind CIPA-compliant, express opt-in consent. Trackers wrapped by this library **never mount** — no script tags, no network beacons, no cookies or identifiers written — until the user affirmatively accepts.
 
@@ -68,7 +66,7 @@ function PrivacySettings() {
 - `status` — aggregate status of the default category: `'pending' | 'granted' | 'denied'`.
 - `statusFor(category)` — status for a specific category (see `categories` below).
 - `hydrated` — `false` until the client has read storage; used to avoid SSR/client mismatches.
-- `record` — the current `ConsentRecord` (or `null`), including `policyVersion`, `timestamp`, and `method`.
+- `record` — the current `ConsentRecord` (or `null`), including `recordId`, `policyVersion`, `timestamp`, and `method`.
 - `grant()` / `deny()` — record a decision programmatically (e.g. from a custom UI).
 - `revoke()` — withdraw a previously granted consent; status becomes `'denied'` and gated trackers unmount.
 - `reset()` — clear the stored record entirely; status returns to `'pending'` and the dialog re-appears (useful for testing or an explicit "ask me again" affordance).
@@ -289,7 +287,21 @@ If you need a defensible record of consent, persist it server-side yourself usin
 </ConsentProvider>
 ```
 
-Each `ConsentRecord` includes `categories` (per-category status), `policyVersion`, an ISO `timestamp`, and `method` (`'dialog' | 'api' | 'embed'`).
+A `ConsentRecord` looks like this:
+
+```json
+{
+  "recordId": "b3b1a2e4-7c9d-4a1e-9f2d-1a2b3c4d5e6f",
+  "categories": { "default": "granted" },
+  "policyVersion": "2026-07-23",
+  "timestamp": "2026-07-23T10:41:00.000Z",
+  "method": "dialog"
+}
+```
+
+`recordId` is a fresh, unique id generated on **every** grant/deny/revoke write (a revoke gets its own id, distinct from the grant it revokes). Mirror it in your server-side consent log inside `onGrant`/`onDeny`/`onRevoke` so you can match a visitor's local device record to the corresponding server-side log entry in a dispute — this is stronger evidence than matching on IP address, which is shared behind NAT/CGNAT, changes across sessions, and does not identify a device. As a rule of thumb, it's reasonable to log the request IP alongside a `grant` (supporting evidence for "this visitor accepted"), but avoid relying on IP to justify a `deny` — the absence of a matching IP proves nothing about consent.
+
+Each `ConsentRecord` includes `recordId` (unique per decision event), `categories` (per-category status), `policyVersion`, an ISO `timestamp`, and `method` (`'dialog' | 'api' | 'embed'`).
 
 ## Limitations
 

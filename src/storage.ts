@@ -43,6 +43,7 @@ function isValidRecord(value: unknown): value is ConsentRecord {
   if (rec.method !== 'dialog' && rec.method !== 'api' && rec.method !== 'embed') {
     return false;
   }
+  if (typeof rec.recordId !== 'string' || rec.recordId.length === 0) return false;
   if (typeof rec.categories !== 'object' || rec.categories === null) return false;
   for (const decision of Object.values(rec.categories as Record<string, unknown>)) {
     if (decision !== 'granted' && decision !== 'denied') return false;

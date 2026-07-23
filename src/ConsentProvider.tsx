@@ -8,6 +8,7 @@ import {
   localStorageBackend,
   readRecord,
 } from './storage';
+import { newRecordId } from './recordId';
 import type {
   CategoryDecision,
   ConsentContextValue,
@@ -53,6 +54,7 @@ export function ConsentProvider({
         policyVersion,
         timestamp: new Date().toISOString(),
         method,
+        recordId: newRecordId(),
       };
     },
     [categories, policyVersion],

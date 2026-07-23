@@ -36,6 +36,7 @@ function makeRecord(overrides: Partial<ConsentRecord> = {}): ConsentRecord {
     policyVersion: '1',
     timestamp: new Date().toISOString(),
     method: 'dialog',
+    recordId: 'test-record-id',
     ...overrides,
   };
 }

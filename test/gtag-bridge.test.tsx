@@ -64,6 +64,7 @@ describe('GtagConsentBridge (AC15)', () => {
         policyVersion: '1',
         timestamp: new Date().toISOString(),
         method: 'api',
+        recordId: 'test-record-id',
       }),
     );
 

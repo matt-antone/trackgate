@@ -19,6 +19,7 @@ function makeRecord(
     policyVersion: '1',
     timestamp: new Date().toISOString(),
     method: 'dialog',
+    recordId: 'test-record-id',
     ...overrides,
   };
 }

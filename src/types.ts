@@ -22,6 +22,14 @@ export interface ConsentRecord {
   /** ISO 8601 timestamp of the decision. */
   timestamp: string;
   method: ConsentMethod;
+  /**
+   * Unique id for this consent EVENT, generated fresh on every grant/deny/revoke
+   * write (a later revoke gets its own id, distinct from the grant it revokes).
+   * Mirror this value server-side in your `onGrant`/`onDeny`/`onRevoke` handlers
+   * to link a visitor's local record to your server-side consent log without
+   * relying on IP address as the correlating key.
+   */
+  recordId: string;
 }
 
 /** Pluggable persistence backend. Default is localStorage-backed. */

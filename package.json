@@ -1,6 +1,6 @@
 {
   "name": "trackgate",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CIPA-compliant consent gating for React tracking components — trackers never mount until express opt-in consent",
   "license": "MIT",
   "author": "Matthew Antone",
