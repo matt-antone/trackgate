@@ -4,6 +4,14 @@
   "description": "CIPA-compliant consent gating for React tracking components — trackers never mount until express opt-in consent",
   "license": "MIT",
   "author": "Matthew Antone",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matt-antone/trackgate.git"
+  },
+  "homepage": "https://github.com/matt-antone/trackgate#readme",
+  "bugs": {
+    "url": "https://github.com/matt-antone/trackgate/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.cjs",
