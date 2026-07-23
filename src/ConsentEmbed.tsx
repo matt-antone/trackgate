@@ -1,6 +1,23 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, HTMLAttributeReferrerPolicy, ReactNode } from 'react';
+import { useEffect } from 'react';
 import { ConsentGate } from './ConsentGate';
 import { useConsent } from './useConsent';
+import { isDev } from './env';
+
+/** Hosts known to serve embed vendor thumbnails — pinged pre-consent if used as `thumbnailUrl`. */
+const VENDOR_THUMBNAIL_HOSTS = [
+  'ytimg.com',
+  'youtube.com',
+  'youtube-nocookie.com',
+  'vimeocdn.com',
+  'vimeo.com',
+];
+
+function isVendorThumbnailHost(hostname: string): boolean {
+  return VENDOR_THUMBNAIL_HOSTS.some(
+    (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
+  );
+}
 
 export interface ConsentEmbedPlaceholderApi {
   grant: () => void;
@@ -18,6 +35,14 @@ export interface ConsentEmbedProps {
   allow?: string;
   /** Rewrite known vendors to privacy-reduced URLs. Default true. */
   privacyEnhanced?: boolean;
+  /**
+   * Render the iframe with the `credentialless` attribute (Chromium: ephemeral,
+   * partitioned storage — vendor cookies die when the iframe unmounts). Ignored
+   * by browsers that don't support it. Default true.
+   */
+  credentialless?: boolean;
+  /** Iframe `referrerpolicy`. Default `'strict-origin-when-cross-origin'` — avoids leaking the full page URL to the vendor. */
+  referrerPolicy?: HTMLAttributeReferrerPolicy;
 }
 
 /**
@@ -87,14 +112,32 @@ export function ConsentEmbed({
   thumbnailUrl,
   width = 560,
   height = 315,
-  allow,
+  allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture',
   privacyEnhanced = true,
+  credentialless = true,
+  referrerPolicy = 'strict-origin-when-cross-origin',
 }: ConsentEmbedProps) {
   const { statusFor, grant } = useConsent();
   const granted = statusFor(category) === 'granted';
   const loadEmbed = () => grant('embed');
 
   const finalSrc = privacyEnhanced ? privacyEnhanceSrc(src) : src;
+
+  useEffect(() => {
+    if (!isDev || !thumbnailUrl) return;
+    try {
+      const { hostname } = new URL(thumbnailUrl);
+      if (isVendorThumbnailHost(hostname)) {
+        console.warn(
+          `[trackgate] thumbnailUrl "${thumbnailUrl}" points at a vendor-hosted image — ` +
+            'the placeholder itself pings the vendor before consent. Self-host the thumbnail instead.',
+        );
+      }
+    } catch {
+      // Invalid URL — nothing to warn about.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [thumbnailUrl]);
 
   return (
     <>
@@ -123,7 +166,10 @@ export function ConsentEmbed({
           width={width}
           height={height}
           allow={allow}
+          referrerPolicy={referrerPolicy}
           style={{ border: 0 }}
+          // `credentialless` isn't in React/TS's iframe attribute types yet; spread it in directly.
+          {...(credentialless ? ({ credentialless: '' } as Record<string, string>) : {})}
         />
       </ConsentGate>
     </>

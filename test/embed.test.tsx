@@ -131,6 +131,83 @@ describe('ConsentEmbed media facade (AC17)', () => {
     });
   });
 
+  it('(e) post-consent iframe has credentialless by default; credentialless={false} removes it', async () => {
+    const { unmount } = render(
+      <ConsentProvider>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" />
+      </ConsentProvider>,
+    );
+    await acceptDialog();
+    await waitFor(() => {
+      const iframe = document.querySelector('iframe');
+      expect(iframe).not.toBeNull();
+      expect(iframe?.hasAttribute('credentialless')).toBe(true);
+    });
+
+    unmount();
+    window.localStorage.clear();
+
+    render(
+      <ConsentProvider>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" credentialless={false} />
+      </ConsentProvider>,
+    );
+    await acceptDialog();
+    await waitFor(() => {
+      const iframe = document.querySelector('iframe');
+      expect(iframe).not.toBeNull();
+      expect(iframe?.hasAttribute('credentialless')).toBe(false);
+    });
+  });
+
+  it('(f) post-consent iframe has the default referrerpolicy attribute', async () => {
+    render(
+      <ConsentProvider>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" />
+      </ConsentProvider>,
+    );
+    await acceptDialog();
+    await waitFor(() => {
+      const iframe = document.querySelector('iframe');
+      expect(iframe).not.toBeNull();
+      expect(iframe?.getAttribute('referrerpolicy')).toBe('strict-origin-when-cross-origin');
+    });
+  });
+
+  it('(g) warns in dev when thumbnailUrl points at a known vendor host, not for self-hosted thumbnails', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { unmount } = render(
+      <ConsentProvider>
+        <ConsentEmbed
+          src="https://www.youtube.com/embed/x"
+          title="Demo"
+          thumbnailUrl="https://i.ytimg.com/vi/x/hq.jpg"
+        />
+      </ConsentProvider>,
+    );
+    await screen.findByRole('dialog');
+    await waitFor(() => {
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[trackgate]'));
+    });
+
+    unmount();
+    warnSpy.mockClear();
+    window.localStorage.clear();
+
+    render(
+      <ConsentProvider>
+        <ConsentEmbed
+          src="https://www.youtube.com/embed/x"
+          title="Demo"
+          thumbnailUrl="https://example.com/thumb.jpg"
+        />
+      </ConsentProvider>,
+    );
+    await screen.findByRole('dialog');
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
   it('(d) revoke unmounts the iframe and shows the placeholder again', async () => {
     render(
       <ConsentProvider>

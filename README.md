@@ -170,6 +170,27 @@ import { ConsentEmbed } from 'trackgate';
 - **Privacy-enhanced by default:** `privacyEnhanced` defaults to `true`. YouTube URLs are rewritten to `youtube-nocookie.com`; Vimeo URLs gain `dnt=1`. Unrecognized hosts are left unchanged. Pass `privacyEnhanced={false}` to use the `src` exactly as given.
 - **Revocation:** revoking consent unmounts the iframe and shows the placeholder again.
 
+### Embed privacy hardening
+
+The post-consent `<iframe>` ships with privacy-hardening defaults, all overridable:
+
+| Prop | Default | Effect |
+| --- | --- | --- |
+| `credentialless` | `true` | Renders the `credentialless` iframe attribute. In Chromium, the iframe gets ephemeral, partitioned storage — any cookies the vendor sets die when the iframe unmounts (e.g. on revoke), instead of persisting across sessions. Browsers without support simply ignore the attribute. |
+| `referrerPolicy` | `'strict-origin-when-cross-origin'` | Stops the vendor from seeing your page's full URL (including query strings) on the referrer header — only the origin is sent cross-site. |
+| `allow` | `'autoplay; encrypted-media; fullscreen; picture-in-picture'` | Standard permissions policy for media embeds; override to grant or restrict features. |
+
+```tsx
+<ConsentEmbed
+  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+  title="Demo video"
+  credentialless={false} // opt out if you need persistent vendor state
+  referrerPolicy="no-referrer"
+/>
+```
+
+**Thumbnail guidance:** self-host `thumbnailUrl` images. A vendor-hosted thumbnail (`i.ytimg.com`, `vimeocdn.com`, etc.) is itself a request to the vendor's servers — it pings them before the visitor has consented to anything, defeating the point of the placeholder. In development, `ConsentEmbed` logs a `console.warn` if it detects a known vendor thumbnail host.
+
 ## Google Consent Mode v2 — `<GtagConsentBridge>`
 
 For sites using `gtag`/Google Tag Manager, `<GtagConsentBridge>` keeps Consent Mode state in sync with `trackgate`'s consent state. Place it *inside* the provider but *outside* `<ConsentGate>` — it needs to run regardless of consent status in order to fire the default-denied signal and subsequent updates:
