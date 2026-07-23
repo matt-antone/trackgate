@@ -12,26 +12,26 @@ interface DefaultConsentDialogProps extends ConsentDialogProps {
 const buttonStyle: CSSProperties = {
   flex: '1 1 0',
   minWidth: 0,
-  padding: 'var(--cipa-button-padding, 0.625rem 1rem)',
-  fontSize: 'var(--cipa-button-font-size, 1rem)',
+  padding: 'var(--trackgate-button-padding, 0.625rem 1rem)',
+  fontSize: 'var(--trackgate-button-font-size, 1rem)',
   fontWeight: 500,
   lineHeight: 1.2,
-  border: 'var(--cipa-button-border, 1px solid currentColor)',
-  borderRadius: 'var(--cipa-button-radius, 6px)',
-  background: 'var(--cipa-button-bg, transparent)',
-  color: 'var(--cipa-button-color, inherit)',
+  border: 'var(--trackgate-button-border, 1px solid currentColor)',
+  borderRadius: 'var(--trackgate-button-radius, 6px)',
+  background: 'var(--trackgate-button-bg, transparent)',
+  color: 'var(--trackgate-button-color, inherit)',
   cursor: 'pointer',
 };
 
 const dialogStyle: CSSProperties = {
-  maxWidth: 'var(--cipa-dialog-max-width, 28rem)',
+  maxWidth: 'var(--trackgate-dialog-max-width, 28rem)',
   width: 'calc(100% - 2rem)',
-  padding: 'var(--cipa-dialog-padding, 1.5rem)',
-  border: 'var(--cipa-dialog-border, 1px solid rgba(0,0,0,0.15))',
-  borderRadius: 'var(--cipa-dialog-radius, 10px)',
-  background: 'var(--cipa-dialog-bg, #fff)',
-  color: 'var(--cipa-dialog-color, #111)',
-  fontFamily: 'var(--cipa-font-family, system-ui, sans-serif)',
+  padding: 'var(--trackgate-dialog-padding, 1.5rem)',
+  border: 'var(--trackgate-dialog-border, 1px solid rgba(0,0,0,0.15))',
+  borderRadius: 'var(--trackgate-dialog-radius, 10px)',
+  background: 'var(--trackgate-dialog-bg, #fff)',
+  color: 'var(--trackgate-dialog-color, #111)',
+  fontFamily: 'var(--trackgate-font-family, system-ui, sans-serif)',
 };
 
 /**

@@ -3,7 +3,7 @@ import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CipaProvider, CipaTracking, useCipaConsent } from '../src/index';
+import { ConsentProvider, ConsentGate, useConsent } from '../src/index';
 import type { TrackerDefinition } from '../src/types';
 
 // AC16 — declarative tracker list.
@@ -22,7 +22,7 @@ function MockPixelB() {
 
 /** Test-only harness exposing revoke() via a button, since revoke isn't a JSX prop. */
 function RevokeButton() {
-  const { revoke } = useCipaConsent();
+  const { revoke } = useConsent();
   return (
     <button type="button" onClick={() => revoke()}>
       Revoke
@@ -54,15 +54,15 @@ describe('declarative tracker list (AC16)', () => {
 
     render(
       <StrictMode>
-        <CipaProvider trackers={trackers}>
+        <ConsentProvider trackers={trackers}>
           <RevokeButton />
-        </CipaProvider>
+        </ConsentProvider>
       </StrictMode>,
     );
 
     // Pre-consent: nothing rendered, nothing injected.
     expect(screen.queryByTestId('mock-pixel')).toBeNull();
-    expect(document.querySelectorAll('script[data-cipa-id="ga"]')).toHaveLength(0);
+    expect(document.querySelectorAll('script[data-trackgate-id="ga"]')).toHaveLength(0);
 
     await acceptDialog();
 
@@ -70,7 +70,7 @@ describe('declarative tracker list (AC16)', () => {
       expect(screen.queryByTestId('mock-pixel')).not.toBeNull();
     });
     // Exactly one script tag, even under StrictMode's double-invoked effects.
-    expect(document.querySelectorAll('script[data-cipa-id="ga"]')).toHaveLength(1);
+    expect(document.querySelectorAll('script[data-trackgate-id="ga"]')).toHaveLength(1);
 
     const revokeButton = screen.getByRole('button', { name: 'Revoke' });
     await userEvent.setup().click(revokeButton);
@@ -85,11 +85,11 @@ describe('declarative tracker list (AC16)', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <div data-testid="jsx-tracked">jsx tracked</div>
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(screen.queryByTestId('jsx-tracked')).toBeNull();
@@ -100,14 +100,14 @@ describe('declarative tracker list (AC16)', () => {
       expect(screen.queryByTestId('jsx-tracked')).not.toBeNull();
     });
 
-    const cipaWarnings = warnSpy.mock.calls.filter((call) =>
-      call.some((arg) => String(arg).includes('cipa-provider')),
+    const trackgateWarnings = warnSpy.mock.calls.filter((call) =>
+      call.some((arg) => String(arg).includes('trackgate')),
     );
-    const cipaErrors = errorSpy.mock.calls.filter((call) =>
-      call.some((arg) => String(arg).includes('cipa-provider')),
+    const trackgateErrors = errorSpy.mock.calls.filter((call) =>
+      call.some((arg) => String(arg).includes('trackgate')),
     );
-    expect(cipaWarnings).toHaveLength(0);
-    expect(cipaErrors).toHaveLength(0);
+    expect(trackgateWarnings).toHaveLength(0);
+    expect(trackgateErrors).toHaveLength(0);
   });
 
   it('(c) duplicate id logs a dev warning; first definition wins; renders once', async () => {
@@ -119,9 +119,9 @@ describe('declarative tracker list (AC16)', () => {
     ];
 
     render(
-      <CipaProvider trackers={trackers}>
+      <ConsentProvider trackers={trackers}>
         <div />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     await acceptDialog();
@@ -144,9 +144,9 @@ describe('declarative tracker list (AC16)', () => {
     const trackers: TrackerDefinition[] = [{ id: 'ga2', src: 'https://tracker.example/ga2.js' }];
 
     const { unmount } = render(
-      <CipaProvider trackers={trackers}>
+      <ConsentProvider trackers={trackers}>
         <RevokeButton />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     // Mount-time warning: a src entry exists and reloadOnRevoke is unset.
@@ -159,14 +159,14 @@ describe('declarative tracker list (AC16)', () => {
 
     await acceptDialog();
     await waitFor(() => {
-      expect(document.querySelectorAll('script[data-cipa-id="ga2"]')).toHaveLength(1);
+      expect(document.querySelectorAll('script[data-trackgate-id="ga2"]')).toHaveLength(1);
     });
 
     await userEvent.setup().click(screen.getByRole('button', { name: 'Revoke' }));
 
     // Script tag persists post-revoke (documented limitation).
     await waitFor(() => {
-      expect(document.querySelectorAll('script[data-cipa-id="ga2"]')).toHaveLength(1);
+      expect(document.querySelectorAll('script[data-trackgate-id="ga2"]')).toHaveLength(1);
     });
 
     unmount();
@@ -181,9 +181,9 @@ describe('declarative tracker list (AC16)', () => {
     });
 
     render(
-      <CipaProvider trackers={trackers} reloadOnRevoke>
+      <ConsentProvider trackers={trackers} reloadOnRevoke>
         <RevokeButton />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     await acceptDialog();
@@ -192,15 +192,15 @@ describe('declarative tracker list (AC16)', () => {
     expect(reloadSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('(e) composition: trackers list + JSX <CipaTracking> child gate on the same state', async () => {
+  it('(e) composition: trackers list + JSX <ConsentGate> child gate on the same state', async () => {
     const trackers: TrackerDefinition[] = [{ id: 'px2', component: MockPixel }];
 
     render(
-      <CipaProvider trackers={trackers}>
-        <CipaTracking>
+      <ConsentProvider trackers={trackers}>
+        <ConsentGate>
           <div data-testid="jsx-tracked">jsx tracked</div>
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(screen.queryByTestId('mock-pixel')).toBeNull();

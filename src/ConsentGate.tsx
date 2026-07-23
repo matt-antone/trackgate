@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { useCipaConsent } from './useCipaConsent';
+import { useConsent } from './useConsent';
 import { isDev } from './env';
 
-export interface CipaTrackingProps {
+export interface ConsentGateProps {
   /** Consent category to gate on. Defaults to 'default'. */
   category?: string;
   children?: ReactNode;
@@ -16,16 +16,16 @@ export interface CipaTrackingProps {
  * If `category` is not one the provider was configured with, fails closed
  * (never mounts) and warns in dev — a silent DX trap otherwise.
  */
-export function CipaTracking({
+export function ConsentGate({
   category = 'default',
   children,
-}: CipaTrackingProps) {
-  const { statusFor, categories } = useCipaConsent();
+}: ConsentGateProps) {
+  const { statusFor, categories } = useConsent();
 
   if (isDev && !categories.includes(category)) {
     console.warn(
-      `[cipa-provider] <CipaTracking category="${category}"> references a category not ` +
-        `configured on <CipaProvider categories={${JSON.stringify(categories)}}>. ` +
+      `[trackgate] <ConsentGate category="${category}"> references a category not ` +
+        `configured on <ConsentProvider categories={${JSON.stringify(categories)}}>. ` +
         'It will never render (failing closed). Add the category to the provider.',
     );
   }

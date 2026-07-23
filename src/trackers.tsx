@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { CipaTracking } from './CipaTracking';
+import { ConsentGate } from './ConsentGate';
 import { loadConsentedScript } from './loadScript';
 import { isDev } from './env';
 import type { TrackerDefinition } from './types';
@@ -18,8 +18,8 @@ interface ScriptTrackerProps {
 
 function ScriptTracker({ id, src, attrs }: ScriptTrackerProps) {
   useEffect(() => {
-    loadConsentedScript(src, { ...attrs, 'data-cipa-id': id });
-    // No cleanup: idempotency is DOM-level (data-cipa-id guard). Removing the
+    loadConsentedScript(src, { ...attrs, 'data-trackgate-id': id });
+    // No cleanup: idempotency is DOM-level (data-trackgate-id guard). Removing the
     // script on unmount would break StrictMode's mount→cleanup→mount cycle and
     // multi-instance reuse. Scripts persist after revoke by design (see
     // reloadOnRevoke); this is documented.
@@ -27,7 +27,7 @@ function ScriptTracker({ id, src, attrs }: ScriptTrackerProps) {
   return null;
 }
 
-interface CipaTrackerListProps {
+interface ConsentTrackerListProps {
   trackers: TrackerDefinition[];
   reloadOnRevoke: boolean;
 }
@@ -37,7 +37,7 @@ interface CipaTrackerListProps {
  * Dedupes by `id` (first wins) before mapping, so we never rely on React's
  * duplicate-key behavior.
  */
-export function CipaTrackerList({ trackers, reloadOnRevoke }: CipaTrackerListProps) {
+export function ConsentTrackerList({ trackers, reloadOnRevoke }: ConsentTrackerListProps) {
   const seen = new Set<string>();
   const deduped: TrackerDefinition[] = [];
   let hasScript = false;
@@ -46,7 +46,7 @@ export function CipaTrackerList({ trackers, reloadOnRevoke }: CipaTrackerListPro
     if (seen.has(def.id)) {
       if (isDev) {
         console.warn(
-          `[cipa-provider] Duplicate tracker id "${def.id}" ignored (first definition wins).`,
+          `[trackgate] Duplicate tracker id "${def.id}" ignored (first definition wins).`,
         );
       }
       continue;
@@ -59,7 +59,7 @@ export function CipaTrackerList({ trackers, reloadOnRevoke }: CipaTrackerListPro
   useEffect(() => {
     if (isDev && hasScript && !reloadOnRevoke) {
       console.warn(
-        '[cipa-provider] Tracker list contains script (src) entries but reloadOnRevoke ' +
+        '[trackgate] Tracker list contains script (src) entries but reloadOnRevoke ' +
           'is not set. Injected scripts keep executing after revoke — enable ' +
           'reloadOnRevoke to hard-reload and kill already-loaded vendor JS.',
       );
@@ -73,15 +73,15 @@ export function CipaTrackerList({ trackers, reloadOnRevoke }: CipaTrackerListPro
         if (hasComponent(def)) {
           const Component = def.component;
           return (
-            <CipaTracking key={def.id} category={category}>
+            <ConsentGate key={def.id} category={category}>
               <Component />
-            </CipaTracking>
+            </ConsentGate>
           );
         }
         return (
-          <CipaTracking key={def.id} category={category}>
+          <ConsentGate key={def.id} category={category}>
             <ScriptTracker id={def.id} src={def.src} attrs={def.attrs} />
-          </CipaTracking>
+          </ConsentGate>
         );
       })}
     </>

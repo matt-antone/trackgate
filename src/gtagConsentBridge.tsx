@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useCipaConsent } from './useCipaConsent';
+import { useConsent } from './useConsent';
 import type { ConsentStatus } from './types';
 
 type GtagFn = (...args: unknown[]) => void;
@@ -49,7 +49,7 @@ export const CONSENT_MODE_DEFAULT_SNIPPET = `<script>
  * absent.
  */
 export function GtagConsentBridge() {
-  const { status } = useCipaConsent();
+  const { status } = useConsent();
   const prev = useRef<ConsentStatus | null>(null);
 
   useEffect(() => {

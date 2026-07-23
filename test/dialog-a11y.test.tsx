@@ -2,8 +2,8 @@ import { act } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe } from 'vitest-axe';
-import { CipaProvider } from '../src';
-import { useCipaConsent } from '../src/useCipaConsent';
+import { ConsentProvider } from '../src';
+import { useConsent } from '../src/useConsent';
 import { DEFAULT_STORAGE_KEY } from '../src/storage';
 
 // Note: vitest-axe@0.1.0 mis-declares `toHaveNoViolations` as a type-only
@@ -30,7 +30,7 @@ beforeAll(() => {
 });
 
 function StatusProbe() {
-  const { status } = useCipaConsent();
+  const { status } = useConsent();
   return <div data-testid="status">{status}</div>;
 }
 
@@ -45,9 +45,9 @@ afterEach(() => {
 describe('Default consent dialog accessibility (AC9)', () => {
   it('renders a native <dialog> shown via showModal()', async () => {
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <StatusProbe />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     const dialog = await waitFor(() => {
@@ -61,9 +61,9 @@ describe('Default consent dialog accessibility (AC9)', () => {
 
   it('has a labelled title via aria-labelledby', async () => {
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <StatusProbe />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     const dialog = await waitFor(() => {
@@ -82,9 +82,9 @@ describe('Default consent dialog accessibility (AC9)', () => {
 
   it('renders Accept and Decline, both keyboard-reachable, with equal prominence', async () => {
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <StatusProbe />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     await waitFor(() => expect(document.querySelector('dialog')).not.toBeNull());
@@ -109,9 +109,9 @@ describe('Default consent dialog accessibility (AC9)', () => {
 
   it('Esc (cancel event) does NOT record a decision: status stays pending, nothing persisted', async () => {
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <StatusProbe />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     const dialog = await waitFor(() => {
@@ -141,9 +141,9 @@ describe('Default consent dialog accessibility (AC9)', () => {
 
   it('has no axe violations', async () => {
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <StatusProbe />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     const dialog = await waitFor(() => {

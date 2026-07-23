@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CipaContext } from './CipaContext';
+import { ConsentContext } from './ConsentContext';
 import { ConsentDialog } from './ConsentDialog';
-import { CipaTrackerList } from './trackers';
+import { ConsentTrackerList } from './trackers';
 import {
   DEFAULT_STORAGE_KEY,
   aggregateDecision,
@@ -10,14 +10,14 @@ import {
 } from './storage';
 import type {
   CategoryDecision,
-  CipaContextValue,
-  CipaProviderProps,
+  ConsentContextValue,
+  ConsentProviderProps,
   ConsentMethod,
   ConsentRecord,
   ConsentStatus,
 } from './types';
 
-export function CipaProvider({
+export function ConsentProvider({
   policyVersion = '1',
   ttlDays,
   declineTtlDays,
@@ -32,7 +32,7 @@ export function CipaProvider({
   dialog,
   dialogProps,
   children,
-}: CipaProviderProps) {
+}: ConsentProviderProps) {
   const [record, setRecord] = useState<ConsentRecord | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -133,7 +133,7 @@ export function CipaProvider({
     return () => window.removeEventListener('storage', onStorage);
   }, [storage, storageKey, policyVersion, ttlDays, declineTtlDays, reloadOnRevoke]);
 
-  const value: CipaContextValue = useMemo(
+  const value: ConsentContextValue = useMemo(
     () => ({
       status,
       statusFor,
@@ -151,10 +151,10 @@ export function CipaProvider({
   const showDialog = hydrated && status === 'pending';
 
   return (
-    <CipaContext.Provider value={value}>
+    <ConsentContext.Provider value={value}>
       {children}
       {trackers && trackers.length > 0 ? (
-        <CipaTrackerList trackers={trackers} reloadOnRevoke={reloadOnRevoke} />
+        <ConsentTrackerList trackers={trackers} reloadOnRevoke={reloadOnRevoke} />
       ) : null}
       {showDialog
         ? dialog
@@ -171,6 +171,6 @@ export function CipaProvider({
             />
           )
         : null}
-    </CipaContext.Provider>
+    </ConsentContext.Provider>
   );
 }

@@ -1,12 +1,12 @@
-export { CipaProvider } from './CipaProvider';
-export { CipaTracking } from './CipaTracking';
-export { CipaEmbed, privacyEnhanceSrc } from './CipaEmbed';
+export { ConsentProvider } from './ConsentProvider';
+export { ConsentGate } from './ConsentGate';
+export { ConsentEmbed, privacyEnhanceSrc } from './ConsentEmbed';
 export { ConsentDialog } from './ConsentDialog';
 export {
   GtagConsentBridge,
   CONSENT_MODE_DEFAULT_SNIPPET,
 } from './gtagConsentBridge';
-export { useCipaConsent } from './useCipaConsent';
+export { useConsent } from './useConsent';
 export { loadConsentedScript } from './loadScript';
 export { localStorageBackend, DEFAULT_STORAGE_KEY } from './storage';
 
@@ -19,8 +19,8 @@ export type {
   TrackerDefinition,
   DialogRenderApi,
   ConsentDialogProps,
-  CipaProviderProps,
-  CipaContextValue,
+  ConsentProviderProps,
+  ConsentContextValue,
 } from './types';
-export type { CipaTrackingProps } from './CipaTracking';
-export type { CipaEmbedProps, CipaEmbedPlaceholderApi } from './CipaEmbed';
+export type { ConsentGateProps } from './ConsentGate';
+export type { ConsentEmbedProps, ConsentEmbedPlaceholderApi } from './ConsentEmbed';

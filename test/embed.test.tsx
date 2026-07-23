@@ -2,13 +2,13 @@ import './dialogPolyfill';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CipaProvider, CipaEmbed, privacyEnhanceSrc, useCipaConsent } from '../src/index';
+import { ConsentProvider, ConsentEmbed, privacyEnhanceSrc, useConsent } from '../src/index';
 import type { ConsentRecord } from '../src/types';
 
 // AC17 — media embed facade.
 
 function RevokeButton() {
-  const { revoke } = useCipaConsent();
+  const { revoke } = useConsent();
   return (
     <button type="button" onClick={() => revoke()}>
       Revoke
@@ -31,12 +31,12 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-describe('CipaEmbed media facade (AC17)', () => {
+describe('ConsentEmbed media facade (AC17)', () => {
   it('(a) pre-consent renders no iframe, a placeholder with title and an Accept & load button', async () => {
     render(
-      <CipaProvider>
-        <CipaEmbed src="https://www.youtube.com/embed/x" title="Demo" />
-      </CipaProvider>,
+      <ConsentProvider>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" />
+      </ConsentProvider>,
     );
 
     // Dialog is present (pending state) — wait for hydration to settle.
@@ -51,9 +51,9 @@ describe('CipaEmbed media facade (AC17)', () => {
     let lastGrant: ConsentRecord | null = null;
 
     const { unmount } = render(
-      <CipaProvider onGrant={(record) => (lastGrant = record)}>
-        <CipaEmbed src="https://www.youtube.com/embed/x" title="Demo" />
-      </CipaProvider>,
+      <ConsentProvider onGrant={(record) => (lastGrant = record)}>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" />
+      </ConsentProvider>,
     );
 
     await screen.findByRole('dialog');
@@ -71,9 +71,9 @@ describe('CipaEmbed media facade (AC17)', () => {
 
     // Dialog-based Accept mounts the embed too (same consent state).
     render(
-      <CipaProvider>
-        <CipaEmbed src="https://www.youtube.com/embed/x" title="Demo" />
-      </CipaProvider>,
+      <ConsentProvider>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" />
+      </ConsentProvider>,
     );
     await acceptDialog();
     await waitFor(() => {
@@ -98,11 +98,11 @@ describe('CipaEmbed media facade (AC17)', () => {
     );
   });
 
-  it('(c) CipaEmbed applies privacyEnhanced by default and can be disabled', async () => {
+  it('(c) ConsentEmbed applies privacyEnhanced by default and can be disabled', async () => {
     const { unmount } = render(
-      <CipaProvider>
-        <CipaEmbed src="https://www.youtube.com/embed/x" title="Demo" />
-      </CipaProvider>,
+      <ConsentProvider>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" />
+      </ConsentProvider>,
     );
     await acceptDialog();
     await waitFor(() => {
@@ -115,13 +115,13 @@ describe('CipaEmbed media facade (AC17)', () => {
     window.localStorage.clear();
 
     render(
-      <CipaProvider>
-        <CipaEmbed
+      <ConsentProvider>
+        <ConsentEmbed
           src="https://www.youtube.com/embed/x"
           title="Demo"
           privacyEnhanced={false}
         />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
     await acceptDialog();
     await waitFor(() => {
@@ -133,10 +133,10 @@ describe('CipaEmbed media facade (AC17)', () => {
 
   it('(d) revoke unmounts the iframe and shows the placeholder again', async () => {
     render(
-      <CipaProvider>
-        <CipaEmbed src="https://www.youtube.com/embed/x" title="Demo" />
+      <ConsentProvider>
+        <ConsentEmbed src="https://www.youtube.com/embed/x" title="Demo" />
         <RevokeButton />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     await acceptDialog();

@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CipaProvider } from '../src/CipaProvider';
-import { CipaTracking } from '../src/CipaTracking';
+import { ConsentProvider } from '../src/ConsentProvider';
+import { ConsentGate } from '../src/ConsentGate';
 import { DEFAULT_STORAGE_KEY } from '../src/storage';
 import type { ConsentRecord } from '../src/types';
 
@@ -63,11 +63,11 @@ describe('AC3 — decline persists', () => {
     const user = userEvent.setup();
 
     const { unmount } = render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     const declineButton = await screen.findByText('Decline');
@@ -82,11 +82,11 @@ describe('AC3 — decline persists', () => {
     unmount();
 
     render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(dialogIsShown()).toBe(false);
@@ -99,11 +99,11 @@ describe('AC4 — grant persists', () => {
     const user = userEvent.setup();
 
     const { unmount } = render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     const acceptButton = await screen.findByText('Accept');
@@ -115,11 +115,11 @@ describe('AC4 — grant persists', () => {
     unmount();
 
     render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(dialogIsShown()).toBe(false);
@@ -132,11 +132,11 @@ describe('AC6 — policy version bump', () => {
     seedRecord(makeRecord({ policyVersion: '1', categories: { default: 'granted' } }));
 
     render(
-      <CipaProvider policyVersion="2">
-        <CipaTracking>
+      <ConsentProvider policyVersion="2">
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(dialogIsShown()).toBe(true);
@@ -154,11 +154,11 @@ describe('AC7 — TTL', () => {
     );
 
     render(
-      <CipaProvider ttlDays={3}>
-        <CipaTracking>
+      <ConsentProvider ttlDays={3}>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(dialogIsShown()).toBe(true);
@@ -174,11 +174,11 @@ describe('AC7 — TTL', () => {
     );
 
     render(
-      <CipaProvider ttlDays={3}>
-        <CipaTracking>
+      <ConsentProvider ttlDays={3}>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(dialogIsShown()).toBe(false);
@@ -196,11 +196,11 @@ describe('AC7b — decline TTL (opt-in)', () => {
     );
 
     render(
-      <CipaProvider declineTtlDays={7}>
-        <CipaTracking>
+      <ConsentProvider declineTtlDays={7}>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(dialogIsShown()).toBe(true);
@@ -216,11 +216,11 @@ describe('AC7b — decline TTL (opt-in)', () => {
     );
 
     render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(dialogIsShown()).toBe(false);
@@ -234,11 +234,11 @@ describe('AC10 — corrupt storage fails closed', () => {
 
     expect(() =>
       render(
-        <CipaProvider>
-          <CipaTracking>
+        <ConsentProvider>
+          <ConsentGate>
             <TrackerChild />
-          </CipaTracking>
-        </CipaProvider>,
+          </ConsentGate>
+        </ConsentProvider>,
       ),
     ).not.toThrow();
 
@@ -251,11 +251,11 @@ describe('AC10 — corrupt storage fails closed', () => {
 
     expect(() =>
       render(
-        <CipaProvider>
-          <CipaTracking>
+        <ConsentProvider>
+          <ConsentGate>
             <TrackerChild />
-          </CipaTracking>
-        </CipaProvider>,
+          </ConsentGate>
+        </ConsentProvider>,
       ),
     ).not.toThrow();
 

@@ -1,5 +1,5 @@
 {
-  "name": "cipa-provider",
+  "name": "trackgate",
   "version": "0.1.0",
   "description": "CIPA-compliant consent gating for React tracking components — trackers never mount until express opt-in consent",
   "license": "MIT",
@@ -33,7 +33,7 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "cipa",
+    "cipa-compliance",
     "consent",
     "privacy",
     "react",

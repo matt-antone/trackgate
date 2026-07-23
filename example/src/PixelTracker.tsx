@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Fake tracking pixel. Only mounts inside <CipaTracking> once consent is
+ * Fake tracking pixel. Only mounts inside <ConsentGate> once consent is
  * granted, so this effect only ever runs post-consent. The `firedRef` guard
  * is the StrictMode-safe idempotency pattern from the README ("Beacon
  * idempotency: your tracker's job, not the provider's") — StrictMode

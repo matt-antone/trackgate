@@ -1,6 +1,6 @@
-# cipa-provider example
+# trackgate example
 
-Manual verification app for the `cipa-provider` package (plan step 12). Not
+Manual verification app for the `trackgate` package (plan step 12). Not
 published — this is a local sanity check, not a demo site.
 
 It consumes the **built** package (`dist/`) via a `file:..` dependency, the

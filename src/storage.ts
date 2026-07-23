@@ -1,6 +1,6 @@
 import type { CategoryDecision, ConsentRecord, ConsentStorage } from './types';
 
-export const DEFAULT_STORAGE_KEY = 'cipa-consent';
+export const DEFAULT_STORAGE_KEY = 'trackgate-consent';
 
 /**
  * Default localStorage-backed storage. Guards `typeof window` (SSR) and wraps

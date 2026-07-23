@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { renderToString } from 'react-dom/server';
-import { CipaProvider, CipaTracking } from '../src';
+import { ConsentProvider, ConsentGate } from '../src';
 
 describe('SSR safety (AC8)', () => {
   it('renders on the server without throwing, without touching storage, and without dialog/tracker markup', () => {
@@ -10,12 +10,12 @@ describe('SSR safety (AC8)', () => {
     let html = '';
     expect(() => {
       html = renderToString(
-        <CipaProvider>
+        <ConsentProvider>
           <div data-testid="app">app shell</div>
-          <CipaTracking>
+          <ConsentGate>
             <div data-testid="tracker">tracker content</div>
-          </CipaTracking>
-        </CipaProvider>,
+          </ConsentGate>
+        </ConsentProvider>,
       );
     }).not.toThrow();
 

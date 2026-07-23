@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CipaProvider } from '../src/CipaProvider';
-import { CipaTracking } from '../src/CipaTracking';
-import { useCipaConsent } from '../src/useCipaConsent';
+import { ConsentProvider } from '../src/ConsentProvider';
+import { ConsentGate } from '../src/ConsentGate';
+import { useConsent } from '../src/useConsent';
 import { DEFAULT_STORAGE_KEY } from '../src/storage';
 import type { ConsentRecord } from '../src/types';
 
@@ -23,7 +23,7 @@ function TrackerChild() {
 }
 
 function Controls() {
-  const { revoke, reset } = useCipaConsent();
+  const { revoke, reset } = useConsent();
   return (
     <div>
       <button onClick={() => revoke()}>revoke</button>
@@ -67,12 +67,12 @@ describe('AC5 — revoke', () => {
     seedGrantedRecord();
 
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <Controls />
-        <CipaTracking>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     // Granted record hydrated: tracker mounted, no dialog.
@@ -95,12 +95,12 @@ describe('reset()', () => {
     seedGrantedRecord();
 
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <Controls />
-        <CipaTracking>
+        <ConsentGate>
           <TrackerChild />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(document.body.contains(screen.getByTestId('tracker'))).toBe(true);

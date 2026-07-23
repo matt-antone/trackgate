@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import {
-  CipaProvider,
-  CipaTracking,
+  ConsentProvider,
+  ConsentGate,
   GtagConsentBridge,
   CONSENT_MODE_DEFAULT_SNIPPET,
-  useCipaConsent,
+  useConsent,
 } from '../src';
 import { DEFAULT_STORAGE_KEY } from '../src/storage';
 
@@ -18,7 +18,7 @@ declare global {
 }
 
 // A gated mock component: only mounts once consent is granted (rendered
-// inside <CipaTracking>), and calls gtag('config', 'G-X') on mount — the
+// inside <ConsentGate>), and calls gtag('config', 'G-X') on mount — the
 // scenario AC15(a) asserts ordering against.
 function MockGtagConfigComponent() {
   useEffect(() => {
@@ -28,7 +28,7 @@ function MockGtagConfigComponent() {
 }
 
 function Controls() {
-  const { grant, deny, revoke } = useCipaConsent();
+  const { grant, deny, revoke } = useConsent();
   return (
     <div>
       <button onClick={() => grant()}>grant</button>
@@ -68,12 +68,12 @@ describe('GtagConsentBridge (AC15)', () => {
     );
 
     render(
-      <CipaProvider>
+      <ConsentProvider>
         <GtagConsentBridge />
-        <CipaTracking>
+        <ConsentGate>
           <MockGtagConfigComponent />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     await waitFor(() => {
@@ -108,10 +108,10 @@ describe('GtagConsentBridge (AC15)', () => {
     window.dataLayer = [];
 
     const { getByText } = render(
-      <CipaProvider>
+      <ConsentProvider>
         <GtagConsentBridge />
         <Controls />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     await waitFor(() => {
@@ -147,10 +147,10 @@ describe('GtagConsentBridge (AC15)', () => {
     window.dataLayer = [];
 
     const { getByText } = render(
-      <CipaProvider>
+      <ConsentProvider>
         <GtagConsentBridge />
         <Controls />
-      </CipaProvider>,
+      </ConsentProvider>,
     );
 
     await waitFor(() => {
@@ -208,10 +208,10 @@ describe('GtagConsentBridge (AC15)', () => {
 
     expect(() => {
       const { getByText, unmount } = render(
-        <CipaProvider>
+        <ConsentProvider>
           <GtagConsentBridge />
           <Controls />
-        </CipaProvider>,
+        </ConsentProvider>,
       );
       fireEvent.click(getByText('grant'));
       fireEvent.click(getByText('revoke'));

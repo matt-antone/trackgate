@@ -1,7 +1,7 @@
 import './dialogPolyfill';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { CipaProvider, CipaTracking, DEFAULT_STORAGE_KEY } from '../src/index';
+import { ConsentProvider, ConsentGate, DEFAULT_STORAGE_KEY } from '../src/index';
 import type { ConsentRecord } from '../src/types';
 
 // AC14 — cross-tab sync. Simulate "another tab" by writing a valid record
@@ -49,11 +49,11 @@ afterEach(() => {
 describe('cross-tab consent sync (AC14)', () => {
   it('another tab granting closes the dialog and mounts trackers here', async () => {
     render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <div data-testid="tracked">tracked</div>
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(await screen.findByRole('dialog')).not.toBeNull();
@@ -76,11 +76,11 @@ describe('cross-tab consent sync (AC14)', () => {
     });
 
     render(
-      <CipaProvider>
-        <CipaTracking>
+      <ConsentProvider>
+        <ConsentGate>
           <div data-testid="tracked">tracked</div>
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     // Establish granted state in this tab first.
@@ -107,11 +107,11 @@ describe('cross-tab consent sync (AC14)', () => {
     });
 
     render(
-      <CipaProvider reloadOnRevoke>
-        <CipaTracking>
+      <ConsentProvider reloadOnRevoke>
+        <ConsentGate>
           <div data-testid="tracked">tracked</div>
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     writeFromOtherTab(makeRecord('granted'));

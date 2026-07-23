@@ -1,4 +1,6 @@
-# cipa-provider
+# trackgate
+
+Formerly `cipa-provider` — renamed to avoid confusion with the Children's Internet Protection Act.
 
 A React provider that gates tracking components behind CIPA-compliant, express opt-in consent. Trackers wrapped by this library **never mount** — no script tags, no network beacons, no cookies or identifiers written — until the user affirmatively accepts.
 
@@ -6,50 +8,50 @@ This is a technical control, not a legal opinion. See [Legal disclaimer](#legal-
 
 ## Why
 
-California's Invasion of Privacy Act (CIPA) is currently the primary vehicle for website-tracking litigation in California. Its consent exceptions require consent **before** interception occurs — a tracker that fires a beacon on page load and *then* shows a cookie banner has already allegedly violated the statute. `cipa-provider` enforces this ordering at the React rendering layer: gated components render `null` until consent is granted, so there is nothing to intercept, no request to send, and no identifier to write.
+California's Invasion of Privacy Act (CIPA) is currently the primary vehicle for website-tracking litigation in California. Its consent exceptions require consent **before** interception occurs — a tracker that fires a beacon on page load and *then* shows a cookie banner has already allegedly violated the statute. `trackgate` enforces this ordering at the React rendering layer: gated components render `null` until consent is granted, so there is nothing to intercept, no request to send, and no identifier to write.
 
 ## Install
 
 ```bash
-npm install cipa-provider
+npm install trackgate
 ```
 
 `react` and `react-dom` (>=18) are peer dependencies. There are no other runtime dependencies.
 
 ## Quickstart
 
-Wrap your app in `<CipaProvider>`, and wrap tracking components in `<CipaTracking>`:
+Wrap your app in `<ConsentProvider>`, and wrap tracking components in `<ConsentGate>`:
 
 ```tsx
-import { CipaProvider, CipaTracking } from 'cipa-provider';
+import { ConsentProvider, ConsentGate } from 'trackgate';
 import { HotjarTracker } from './HotjarTracker';
 import { MetaPixel } from './MetaPixel';
 
 function App() {
   return (
-    <CipaProvider policyVersion="2026-07-23">
+    <ConsentProvider policyVersion="2026-07-23">
       <YourAppContent />
 
-      <CipaTracking>
+      <ConsentGate>
         <HotjarTracker />
         <MetaPixel />
-      </CipaTracking>
-    </CipaProvider>
+      </ConsentGate>
+    </ConsentProvider>
   );
 }
 ```
 
-`HotjarTracker` and `MetaPixel` are not modified in any way — they are ordinary React components. `<CipaTracking>` simply does not render its children (`null`) until the visitor has granted consent. No dialog markup, no tracker markup, and no storage access happens on the server (SSR-safe), so there is no hydration mismatch.
+`HotjarTracker` and `MetaPixel` are not modified in any way — they are ordinary React components. `<ConsentGate>` simply does not render its children (`null`) until the visitor has granted consent. No dialog markup, no tracker markup, and no storage access happens on the server (SSR-safe), so there is no hydration mismatch.
 
 By default, a native `<dialog>`-based consent prompt appears automatically once the provider mounts on the client and no prior decision is on record.
 
-### Reading consent state — `useCipaConsent()`
+### Reading consent state — `useConsent()`
 
 ```tsx
-import { useCipaConsent } from 'cipa-provider';
+import { useConsent } from 'trackgate';
 
 function PrivacySettings() {
-  const { status, statusFor, hydrated, record, grant, deny, revoke, reset } = useCipaConsent();
+  const { status, statusFor, hydrated, record, grant, deny, revoke, reset } = useConsent();
 
   return (
     <div>
@@ -71,12 +73,12 @@ function PrivacySettings() {
 - `revoke()` — withdraw a previously granted consent; status becomes `'denied'` and gated trackers unmount.
 - `reset()` — clear the stored record entirely; status returns to `'pending'` and the dialog re-appears (useful for testing or an explicit "ask me again" affordance).
 
-`useCipaConsent()` throws a descriptive error if called outside a `<CipaProvider>`.
+`useConsent()` throws a descriptive error if called outside a `<ConsentProvider>`.
 
-## `<CipaProvider>` props
+## `<ConsentProvider>` props
 
 ```tsx
-<CipaProvider
+<ConsentProvider
   policyVersion="2026-07-23"
   ttlDays={365}
   declineTtlDays={undefined}
@@ -84,7 +86,7 @@ function PrivacySettings() {
   reloadOnRevoke={false}
   trackers={[]}
   storage={undefined}
-  storageKey="cipa-consent"
+  storageKey="trackgate-consent"
   onGrant={(record) => persistToServer(record)}
   onDeny={(record) => persistToServer(record)}
   onRevoke={(record) => persistToServer(record)}
@@ -92,7 +94,7 @@ function PrivacySettings() {
   dialogProps={{}}
 >
   {children}
-</CipaProvider>
+</ConsentProvider>
 ```
 
 | Prop | Type | Default | Notes |
@@ -104,7 +106,7 @@ function PrivacySettings() {
 | `reloadOnRevoke` | `boolean` | `false` | Hard-reloads the page after `revoke()` so already-loaded vendor JS is torn down. See [Limitations](#limitations). |
 | `trackers` | `TrackerDefinition[]` | — | Optional declarative tracker list. See [Declarative trackers](#declarative-trackers-optional) below. Omitting it changes nothing. |
 | `storage` | `ConsentStorage` | localStorage-backed | Custom storage backend. See [Consent records](#consent-records-are-not-legal-evidence-by-themselves). |
-| `storageKey` | `string` | `'cipa-consent'` | Key used with the storage backend. |
+| `storageKey` | `string` | `'trackgate-consent'` | Key used with the storage backend. |
 | `onGrant` / `onDeny` / `onRevoke` | `(record: ConsentRecord) => void` | — | Fired on each corresponding transition. This is the seam for server-side persistence. |
 | `dialog` | `(api: DialogRenderApi) => ReactNode` | built-in native `<dialog>` UI | Full render-prop override for a custom consent UI. |
 | `dialogProps` | `ConsentDialogProps` | `{}` | Props passed to the built-in dialog (copy, labels, etc.) when not overriding `dialog`. |
@@ -121,15 +123,15 @@ interface ConsentStorage {
 
 ## Declarative trackers (optional)
 
-Instead of (or in addition to) wrapping JSX in `<CipaTracking>`, you may pass a list of tracker definitions to the provider. This is entirely optional — omitting `trackers` changes nothing.
+Instead of (or in addition to) wrapping JSX in `<ConsentGate>`, you may pass a list of tracker definitions to the provider. This is entirely optional — omitting `trackers` changes nothing.
 
 Two forms are supported: a React component (`component`), or an external script (`src`):
 
 ```tsx
-import { CipaProvider } from 'cipa-provider';
+import { ConsentProvider } from 'trackgate';
 import { HotjarTracker } from './HotjarTracker';
 
-<CipaProvider
+<ConsentProvider
   trackers={[
     { id: 'hotjar', component: HotjarTracker },
     {
@@ -140,7 +142,7 @@ import { HotjarTracker } from './HotjarTracker';
   ]}
 >
   {children}
-</CipaProvider>
+</ConsentProvider>
 ```
 
 - `{ id, component }` — `component` must be a component **type** (not an already-created element). If you're holding a `ReactNode`, wrap it in a trivial component first.
@@ -150,14 +152,14 @@ import { HotjarTracker } from './HotjarTracker';
 
 Script trackers keep executing after `revoke()` — JavaScript already loaded and running cannot be un-loaded from the page. If your `trackers` list includes any `src` entries and `reloadOnRevoke` is not set, the provider emits a `console.warn` in development explaining this. Set `reloadOnRevoke` if you need revocation to reliably stop script-based trackers.
 
-## `<CipaEmbed>` — third-party media embeds
+## `<ConsentEmbed>` — third-party media embeds
 
-YouTube, Vimeo, and similar iframe embeds set cookies and transmit viewer data on load, so they're trackers too — but unlike a beacon script, an embed is visible content that can't simply vanish. `<CipaEmbed>` renders a placeholder pre-consent and swaps in the real iframe once the visitor accepts:
+YouTube, Vimeo, and similar iframe embeds set cookies and transmit viewer data on load, so they're trackers too — but unlike a beacon script, an embed is visible content that can't simply vanish. `<ConsentEmbed>` renders a placeholder pre-consent and swaps in the real iframe once the visitor accepts:
 
 ```tsx
-import { CipaEmbed } from 'cipa-provider';
+import { ConsentEmbed } from 'trackgate';
 
-<CipaEmbed
+<ConsentEmbed
   src="https://www.youtube.com/embed/dQw4w9WgXcQ"
   title="Demo video"
   width={560}
@@ -172,15 +174,15 @@ import { CipaEmbed } from 'cipa-provider';
 
 ## Google Consent Mode v2 — `<GtagConsentBridge>`
 
-For sites using `gtag`/Google Tag Manager, `<GtagConsentBridge>` keeps Consent Mode state in sync with `cipa-provider`'s consent state. Place it *inside* the provider but *outside* `<CipaTracking>` — it needs to run regardless of consent status in order to fire the default-denied signal and subsequent updates:
+For sites using `gtag`/Google Tag Manager, `<GtagConsentBridge>` keeps Consent Mode state in sync with `trackgate`'s consent state. Place it *inside* the provider but *outside* `<ConsentGate>` — it needs to run regardless of consent status in order to fire the default-denied signal and subsequent updates:
 
 ```tsx
-import { CipaProvider, GtagConsentBridge } from 'cipa-provider';
+import { ConsentProvider, GtagConsentBridge } from 'trackgate';
 
-<CipaProvider policyVersion="2026-07-23">
+<ConsentProvider policyVersion="2026-07-23">
   <GtagConsentBridge />
   {/* rest of your app */}
-</CipaProvider>
+</ConsentProvider>
 ```
 
 On mount, if there's no prior grant, it fires:
@@ -223,7 +225,7 @@ If your GTM/gtag snippet lives in `<head>` (a static HTML file, `_document`, a C
 You can print the exact string to paste with:
 
 ```ts
-import { CONSENT_MODE_DEFAULT_SNIPPET } from 'cipa-provider';
+import { CONSENT_MODE_DEFAULT_SNIPPET } from 'trackgate';
 
 console.log(CONSENT_MODE_DEFAULT_SNIPPET);
 ```
@@ -232,7 +234,7 @@ console.log(CONSENT_MODE_DEFAULT_SNIPPET);
 
 ## Beacon idempotency: your tracker's job, not the provider's
 
-React's `<StrictMode>` intentionally double-invokes effects in development (mount → cleanup → mount). `cipa-provider` does not promise "your tracker's mount effect fires exactly once" — components can legitimately remount for reasons unrelated to consent. Making a beacon or pixel call idempotent is the tracker's own responsibility. A simple ref guard:
+React's `<StrictMode>` intentionally double-invokes effects in development (mount → cleanup → mount). `trackgate` does not promise "your tracker's mount effect fires exactly once" — components can legitimately remount for reasons unrelated to consent. Making a beacon or pixel call idempotent is the tracker's own responsibility. A simple ref guard:
 
 ```tsx
 import { useEffect, useRef } from 'react';
@@ -251,27 +253,27 @@ function PixelTracker() {
 }
 ```
 
-`loadConsentedScript` (used internally by declarative `src` trackers) already guards this way at the DOM level when given a `data-cipa-id`:
+`loadConsentedScript` (used internally by declarative `src` trackers) already guards this way at the DOM level when given a `data-trackgate-id`:
 
 ```ts
-import { loadConsentedScript } from 'cipa-provider';
+import { loadConsentedScript } from 'trackgate';
 
 loadConsentedScript('https://example.com/vendor.js', {
-  'data-cipa-id': 'vendor-script',
+  'data-trackgate-id': 'vendor-script',
   async: 'true',
 });
 ```
 
-Calling this repeatedly with the same `data-cipa-id` is a no-op after the first injection — it checks `document.querySelector('script[data-cipa-id="…"]')` before adding a new `<script>` tag.
+Calling this repeatedly with the same `data-trackgate-id` is a no-op after the first injection — it checks `document.querySelector('script[data-trackgate-id="…"]')` before adding a new `<script>` tag.
 
 ## Consent records are not legal evidence by themselves
 
-By default, `cipa-provider` persists the current `ConsentRecord` to `localStorage`. This is convenient client-side state — it lets the provider avoid re-prompting a returning visitor — but **it is not an audit trail**. It's controlled entirely by the visitor's browser, can be cleared or edited by them, and proves nothing to a court or regulator on its own.
+By default, `trackgate` persists the current `ConsentRecord` to `localStorage`. This is convenient client-side state — it lets the provider avoid re-prompting a returning visitor — but **it is not an audit trail**. It's controlled entirely by the visitor's browser, can be cleared or edited by them, and proves nothing to a court or regulator on its own.
 
 If you need a defensible record of consent, persist it server-side yourself using the callbacks:
 
 ```tsx
-<CipaProvider
+<ConsentProvider
   policyVersion="2026-07-23"
   onGrant={(record) => {
     fetch('/api/consent', { method: 'POST', body: JSON.stringify(record) });
@@ -284,16 +286,16 @@ If you need a defensible record of consent, persist it server-side yourself usin
   }}
 >
   {children}
-</CipaProvider>
+</ConsentProvider>
 ```
 
 Each `ConsentRecord` includes `categories` (per-category status), `policyVersion`, an ISO `timestamp`, and `method` (`'dialog' | 'api' | 'embed'`).
 
 ## Limitations
 
-**Read this section before relying on `cipa-provider` for compliance.**
+**Read this section before relying on `trackgate` for compliance.**
 
-1. **Anything outside the React tree is not gated.** Scripts placed directly in `index.html`, `_document`, a CMS template, or a GTM container loaded in `<head>` run *before* React mounts and are entirely invisible to this library. Move them inside `<CipaTracking>` as a component, load them via `loadConsentedScript`, or — for `gtag`/GTM specifically — use the `CONSENT_MODE_DEFAULT_SNIPPET` described above. There is no global script interceptor here (a monkey-patched `createElement`/`MutationObserver` approach was considered and rejected as fragile and SSR-hostile); this library only gates what you explicitly wrap.
+1. **Anything outside the React tree is not gated.** Scripts placed directly in `index.html`, `_document`, a CMS template, or a GTM container loaded in `<head>` run *before* React mounts and are entirely invisible to this library. Move them inside `<ConsentGate>` as a component, load them via `loadConsentedScript`, or — for `gtag`/GTM specifically — use the `CONSENT_MODE_DEFAULT_SNIPPET` described above. There is no global script interceptor here (a monkey-patched `createElement`/`MutationObserver` approach was considered and rejected as fragile and SSR-hostile); this library only gates what you explicitly wrap.
 2. **Revocation can't undo the past.** Calling `revoke()` stops *future* tracking — mounted components unmount, and (for declarative `src` trackers) a dev warning nudges you toward `reloadOnRevoke`. It cannot recall data already transmitted to a vendor, and it cannot clear cookies or storage that vendor's JavaScript has already written in the browser. Set `reloadOnRevoke` if you need a hard page reload to tear down already-running vendor code and its client-side state.
 3. **A custom `ConsentStorage` gets no automatic cross-tab sync.** The default localStorage backend listens for the `storage` event so multiple open tabs stay in sync automatically. If you supply your own `storage`, you are responsible for wiring up equivalent synchronization if you need it.
 
@@ -304,12 +306,12 @@ The California Invasion of Privacy Act (Cal. Penal Code §§ 630–638.55) is a 
 - **§ 631(a) (wiretapping)** prohibits a third party from intercepting the *contents* of a communication in transit without consent of all parties — applied against session-replay tools, chat widgets, and ad pixels that relay page content, form input, or chat text to a vendor.
 - **§ 638.51 (pen register / trap-and-trace)** prohibits installing a device or process that captures dialing, routing, addressing, or signaling information without a court order. Recent case law has extended this theory to tracking pixels/SDKs that collect IP addresses and device fingerprints — currently the dominant claim pattern.
 - **§ 637.2 (private right of action)** provides **$5,000 in statutory damages per violation**, with no actual harm required — which is what makes this an active area of litigation.
-- Both § 631 and § 638.51 carry an exception for **consent** — but that consent must be obtained **before** interception occurs. A tracker that fires on page load and shows a cookie banner afterward has arguably already violated the statute. This is why `cipa-provider` is opt-in and blocking, not opt-out (unlike CCPA).
+- Both § 631 and § 638.51 carry an exception for **consent** — but that consent must be obtained **before** interception occurs. A tracker that fires on page load and shows a cookie banner afterward has arguably already violated the statute. This is why `trackgate` is opt-in and blocking, not opt-out (unlike CCPA).
 - **On SB 690:** as of this writing, SB 690 (which would remove the private right of action for § 638.51 pen-register claims, AG-enforcement only, effective Jan 1 2027) has only passed a committee vote — **it is not law**. It would not affect § 631 wiretap claims even if enacted. Do not build compliance decisions around its passage.
 
 ## Legal disclaimer
 
-`cipa-provider` is a **technical control**, not legal advice. It cannot by itself make a website compliant with CIPA or any other law. Your consent dialog copy, privacy policy, and the specific trackers you gate must be reviewed and approved by counsel. Nothing in this README or in the library's behavior should be relied upon as a substitute for legal review.
+`trackgate` is a **technical control**, not legal advice. It cannot by itself make a website compliant with CIPA or any other law. Your consent dialog copy, privacy policy, and the specific trackers you gate must be reviewed and approved by counsel. Nothing in this README or in the library's behavior should be relied upon as a substitute for legal review.
 
 ## Accessibility and anti-dark-pattern defaults
 

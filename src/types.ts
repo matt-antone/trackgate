@@ -60,7 +60,7 @@ export interface ConsentDialogProps {
   privacyPolicyUrl?: string;
 }
 
-export interface CipaProviderProps {
+export interface ConsentProviderProps {
   /** Bumping this invalidates stored records → re-prompt. */
   policyVersion?: string;
   /** Expire GRANTED records after N days (denied records unaffected). */
@@ -85,8 +85,8 @@ export interface CipaProviderProps {
   children?: ReactNode;
 }
 
-/** Value exposed by {@link useCipaConsent}. */
-export interface CipaContextValue {
+/** Value exposed by {@link useConsent}. */
+export interface ConsentContextValue {
   status: ConsentStatus;
   statusFor: (category: string) => ConsentStatus;
   hydrated: boolean;

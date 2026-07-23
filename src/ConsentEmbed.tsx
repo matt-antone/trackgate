@@ -1,17 +1,17 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { CipaTracking } from './CipaTracking';
-import { useCipaConsent } from './useCipaConsent';
+import { ConsentGate } from './ConsentGate';
+import { useConsent } from './useConsent';
 
-export interface CipaEmbedPlaceholderApi {
+export interface ConsentEmbedPlaceholderApi {
   grant: () => void;
   title: string;
 }
 
-export interface CipaEmbedProps {
+export interface ConsentEmbedProps {
   src: string;
   title: string;
   category?: string;
-  placeholder?: (api: CipaEmbedPlaceholderApi) => ReactNode;
+  placeholder?: (api: ConsentEmbedPlaceholderApi) => ReactNode;
   thumbnailUrl?: string;
   width?: number | string;
   height?: number | string;
@@ -56,10 +56,10 @@ const panelStyle: CSSProperties = {
   boxSizing: 'border-box',
   padding: '1rem',
   textAlign: 'center',
-  background: 'var(--cipa-embed-bg, #f2f2f2)',
-  color: 'var(--cipa-embed-color, #111)',
-  border: 'var(--cipa-embed-border, 1px solid rgba(0,0,0,0.15))',
-  borderRadius: 'var(--cipa-embed-radius, 8px)',
+  background: 'var(--trackgate-embed-bg, #f2f2f2)',
+  color: 'var(--trackgate-embed-color, #111)',
+  border: 'var(--trackgate-embed-border, 1px solid rgba(0,0,0,0.15))',
+  borderRadius: 'var(--trackgate-embed-radius, 8px)',
 };
 
 const buttonStyle: CSSProperties = {
@@ -77,9 +77,9 @@ const buttonStyle: CSSProperties = {
  * Consent facade for third-party iframe embeds (YouTube/Vimeo/etc.). Pre-consent
  * renders a same-size placeholder with a click-to-load button (records a grant
  * with `method:'embed'`); post-consent renders the iframe. Pure composition over
- * {@link CipaTracking} — no new gating path.
+ * {@link ConsentGate} — no new gating path.
  */
-export function CipaEmbed({
+export function ConsentEmbed({
   src,
   title,
   category = 'default',
@@ -89,8 +89,8 @@ export function CipaEmbed({
   height = 315,
   allow,
   privacyEnhanced = true,
-}: CipaEmbedProps) {
-  const { statusFor, grant } = useCipaConsent();
+}: ConsentEmbedProps) {
+  const { statusFor, grant } = useConsent();
   const granted = statusFor(category) === 'granted';
   const loadEmbed = () => grant('embed');
 
@@ -116,7 +116,7 @@ export function CipaEmbed({
             </button>
           </div>
         ))}
-      <CipaTracking category={category}>
+      <ConsentGate category={category}>
         <iframe
           src={finalSrc}
           title={title}
@@ -125,7 +125,7 @@ export function CipaEmbed({
           allow={allow}
           style={{ border: 0 }}
         />
-      </CipaTracking>
+      </ConsentGate>
     </>
   );
 }

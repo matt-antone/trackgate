@@ -1,14 +1,14 @@
 import {
-  CipaProvider,
-  CipaTracking,
-  CipaEmbed,
-  useCipaConsent,
+  ConsentProvider,
+  ConsentGate,
+  ConsentEmbed,
+  useConsent,
   type ConsentRecord,
-} from 'cipa-provider';
+} from 'trackgate';
 import { PixelTracker } from './PixelTracker';
 
 function StatusPanel() {
-  const { status, hydrated, revoke, reset } = useCipaConsent();
+  const { status, hydrated, revoke, reset } = useConsent();
 
   return (
     <section>
@@ -36,13 +36,13 @@ function onDeny(record: ConsentRecord) {
 
 export function App() {
   return (
-    <CipaProvider
+    <ConsentProvider
       policyVersion="1"
       onGrant={onGrant}
       onDeny={onDeny}
       trackers={[{ id: 'demo-vendor-script', src: '/tracker.js' }]}
     >
-      <h1>cipa-provider example</h1>
+      <h1>trackgate example</h1>
       <p>
         Manual verification app for AC13 (built-package consumption) and AC2
         (no pre-consent network). Open DevTools Network before accepting the
@@ -54,9 +54,9 @@ export function App() {
 
       <section>
         <h2>JSX-gated fake pixel</h2>
-        <CipaTracking>
+        <ConsentGate>
           <PixelTracker />
-        </CipaTracking>
+        </ConsentGate>
       </section>
 
       <section>
@@ -70,11 +70,11 @@ export function App() {
 
       <section>
         <h2>Embed facade</h2>
-        <CipaEmbed
+        <ConsentEmbed
           src="https://www.youtube.com/embed/dQw4w9WgXcQ"
           title="Demo video"
         />
       </section>
-    </CipaProvider>
+    </ConsentProvider>
   );
 }

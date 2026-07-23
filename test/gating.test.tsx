@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CipaProvider } from '../src/CipaProvider';
-import { CipaTracking } from '../src/CipaTracking';
+import { ConsentProvider } from '../src/ConsentProvider';
+import { ConsentGate } from '../src/ConsentGate';
 import { DEFAULT_STORAGE_KEY } from '../src/storage';
 
 // jsdom does not implement the native <dialog> element's showModal()/close();
@@ -56,11 +56,11 @@ afterEach(() => {
 describe('AC1 — no pre-consent render', () => {
   test('pending status: tracker child absent from DOM, zero scripts injected', () => {
     render(
-      <CipaProvider storageKey={DEFAULT_STORAGE_KEY}>
-        <CipaTracking>
+      <ConsentProvider storageKey={DEFAULT_STORAGE_KEY}>
+        <ConsentGate>
           <MockTracker />
-        </CipaTracking>
-      </CipaProvider>,
+        </ConsentGate>
+      </ConsentProvider>,
     );
 
     expect(screen.queryByTestId('tracker')).toBeNull();
@@ -97,11 +97,11 @@ describe('AC2 — no pre-consent network', () => {
 
     try {
       render(
-        <CipaProvider storageKey={DEFAULT_STORAGE_KEY}>
-          <CipaTracking>
+        <ConsentProvider storageKey={DEFAULT_STORAGE_KEY}>
+          <ConsentGate>
             <MockTracker />
-          </CipaTracking>
-        </CipaProvider>,
+          </ConsentGate>
+        </ConsentProvider>,
       );
 
       // Pre-accept: zero tracker-originated calls on any channel.
