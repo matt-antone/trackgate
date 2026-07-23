@@ -324,6 +324,20 @@ A `ConsentRecord` looks like this:
 
 Each `ConsentRecord` includes `recordId` (unique per decision event), `categories` (per-category status), `policyVersion`, an ISO `timestamp`, and `method` (`'dialog' | 'api' | 'embed'`).
 
+## Google Fonts and other third-party assets: avoid, don't gate
+
+Remote font requests (`fonts.googleapis.com` / `fonts.gstatic.com`) transmit each visitor's IP address to Google before any consent can be collected — the exact fact pattern behind the German *LG München* Google Fonts ruling and the same IP-transmission theory used in CIPA pen-register claims. But **consent-gating fonts is the wrong fix**: fonts are render-critical, so gating them means every pre-consent and declining visitor gets fallback typography and layout shift forever — visually punishing the choice not to consent.
+
+**Eliminate the third-party request instead:**
+
+- **Self-host via [Fontsource](https://fontsource.org):** `npm install @fontsource/inter`, then `import '@fontsource/inter/400.css'` — fonts ship from your own origin.
+- **Next.js:** `next/font/google` downloads fonts at build time and self-hosts them automatically; production traffic never touches Google.
+- **Manual:** download the `woff2` files (e.g. via google-webfonts-helper) and serve them yourself.
+
+Google Fonts' license permits self-hosting. No third-party request means nothing to disclose, nothing to gate, and faster loads.
+
+The same "avoid, don't gate" logic applies to any third-party asset that isn't itself a tracker: CDN-hosted CSS, icon fonts, remote images. Reserve `<ConsentGate>` for things that *track*. The narrow exception is a font service that contractually cannot be self-hosted **and** tracks (e.g. Adobe Fonts) — treat that like any other tracker: load it post-consent inside the gate and accept a fallback `font-family` stack pre-consent.
+
 ## Limitations
 
 **Read this section before relying on `trackgate` for compliance.**
