@@ -19,6 +19,7 @@ export type {
   TrackerDefinition,
   DialogRenderApi,
   ConsentDialogProps,
+  ConsentDialogClassNames,
   ConsentProviderProps,
   ConsentContextValue,
 } from './types';

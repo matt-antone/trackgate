@@ -107,7 +107,47 @@ function PrivacySettings() {
 | `storageKey` | `string` | `'trackgate-consent'` | Key used with the storage backend. |
 | `onGrant` / `onDeny` / `onRevoke` | `(record: ConsentRecord) => void` | — | Fired on each corresponding transition. This is the seam for server-side persistence. |
 | `dialog` | `(api: DialogRenderApi) => ReactNode` | built-in native `<dialog>` UI | Full render-prop override for a custom consent UI. |
-| `dialogProps` | `ConsentDialogProps` | `{}` | Props passed to the built-in dialog (copy, labels, etc.) when not overriding `dialog`. |
+| `dialogProps` | `ConsentDialogProps` | `{}` | Props passed to the built-in dialog (copy, labels, `classNames`, etc.) when not overriding `dialog`. |
+
+### Styling the built-in dialog with your own classes
+
+Beyond the `--trackgate-*` CSS variables, `dialogProps.classNames` lets you attach a class to any slot of the built-in dialog: `dialog`, `title`, `description`, `privacyPolicy`, `actions`, `acceptButton`, `declineButton`.
+
+```tsx
+<ConsentProvider
+  dialogProps={{
+    classNames: {
+      dialog: 'consent-modal',
+      acceptButton: 'btn btn-primary',
+      declineButton: 'btn btn-secondary',
+    },
+  }}
+>
+```
+
+A slot that receives a class gets **no default inline style** — your CSS owns that slot entirely (inline styles would otherwise beat any class rule, making overrides impossible). Slots you leave unclassed keep the built-in styling.
+
+For small tweaks without taking over a slot, set the CSS variables instead — they apply to the built-in styling of unclassed slots:
+
+```css
+:root {
+  --trackgate-font-family: system-ui, sans-serif;
+  --trackgate-dialog-max-width: 28rem;
+  --trackgate-dialog-padding: 1.5rem;
+  --trackgate-dialog-border: 1px solid rgba(0, 0, 0, 0.15);
+  --trackgate-dialog-radius: 10px;
+  --trackgate-dialog-bg: #fff;
+  --trackgate-dialog-color: #111;
+  --trackgate-button-padding: 0.625rem 1rem;
+  --trackgate-button-font-size: 1rem;
+  --trackgate-button-border: 1px solid currentColor;
+  --trackgate-button-radius: 6px;
+  --trackgate-button-bg: transparent;
+  --trackgate-button-color: inherit;
+}
+```
+
+Accept and Decline share one set of button variables by design — equal visual prominence is an anti-dark-pattern requirement for valid consent. Use `classNames` if you need them to differ.
 
 `ConsentStorage` is a small interface if you need a non-localStorage backend:
 
@@ -187,6 +227,31 @@ The post-consent `<iframe>` ships with privacy-hardening defaults, all overridab
   credentialless={false} // opt out if you need persistent vendor state
   referrerPolicy="no-referrer"
 />
+```
+
+### Styling the embed with your own classes
+
+`classNames` attaches a class to any slot of the embed: `placeholder`, `thumbnail`, `title`, `button`, `iframe`.
+
+```tsx
+<ConsentEmbed
+  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+  title="Demo video"
+  classNames={{ placeholder: 'embed-panel', button: 'btn btn-primary' }}
+/>
+```
+
+Same rule as the dialog: a slot that receives a class gets **no default inline style** — your CSS owns that slot entirely. For `placeholder` that includes the `width`/`height` sizing, so size it in your CSS.
+
+The unclassed placeholder reads these CSS variables:
+
+```css
+:root {
+  --trackgate-embed-bg: #f2f2f2;
+  --trackgate-embed-color: #111;
+  --trackgate-embed-border: 1px solid rgba(0, 0, 0, 0.15);
+  --trackgate-embed-radius: 8px;
+}
 ```
 
 **Thumbnail guidance:** self-host `thumbnailUrl` images. A vendor-hosted thumbnail (`i.ytimg.com`, `vimeocdn.com`, etc.) is itself a request to the vendor's servers — it pings them before the visitor has consented to anything, defeating the point of the placeholder. In development, `ConsentEmbed` logs a `console.warn` if it detects a known vendor thumbnail host.

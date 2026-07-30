@@ -49,6 +49,7 @@ export function ConsentDialog({
   acceptLabel = 'Accept',
   declineLabel = 'Decline',
   privacyPolicyUrl,
+  classNames = {},
   onAccept,
   onDecline,
 }: DefaultConsentDialogProps) {
@@ -68,25 +69,53 @@ export function ConsentDialog({
     <dialog
       ref={ref}
       aria-labelledby={titleId}
-      style={dialogStyle}
+      className={classNames.dialog}
+      // A slot with a custom class gets no default inline style — inline
+      // styles would beat any class rule, making overrides impossible.
+      style={classNames.dialog ? undefined : dialogStyle}
       onCancel={(e) => e.preventDefault()}
     >
-      <h2 id={titleId} style={{ margin: '0 0 0.75rem', fontSize: '1.25rem' }}>
+      <h2
+        id={titleId}
+        className={classNames.title}
+        style={classNames.title ? undefined : { margin: '0 0 0.75rem', fontSize: '1.25rem' }}
+      >
         {title}
       </h2>
-      <p style={{ margin: '0 0 1.25rem', lineHeight: 1.5 }}>{description}</p>
+      <p
+        className={classNames.description}
+        style={classNames.description ? undefined : { margin: '0 0 1.25rem', lineHeight: 1.5 }}
+      >
+        {description}
+      </p>
       {privacyPolicyUrl ? (
-        <p style={{ margin: '0 0 1.25rem' }}>
+        <p
+          className={classNames.privacyPolicy}
+          style={classNames.privacyPolicy ? undefined : { margin: '0 0 1.25rem' }}
+        >
           <a href={privacyPolicyUrl} target="_blank" rel="noreferrer">
             Privacy policy
           </a>
         </p>
       ) : null}
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button type="button" style={buttonStyle} onClick={onDecline}>
+      <div
+        className={classNames.actions}
+        style={classNames.actions ? undefined : { display: 'flex', gap: '0.75rem' }}
+      >
+        <button
+          type="button"
+          className={classNames.declineButton}
+          style={classNames.declineButton ? undefined : buttonStyle}
+          onClick={onDecline}
+        >
           {declineLabel}
         </button>
-        <button type="button" style={buttonStyle} onClick={onAccept}>
+        <button
+          type="button"
+          className={classNames.acceptButton}
+          style={classNames.acceptButton ? undefined : buttonStyle}
+          onClick={onAccept}
+        >
           {acceptLabel}
         </button>
       </div>

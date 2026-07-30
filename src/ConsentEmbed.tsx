@@ -37,6 +37,19 @@ export interface ConsentEmbedProps {
   credentialless?: boolean;
   /** Iframe `referrerpolicy`. Default `'strict-origin-when-cross-origin'` — avoids leaking the full page URL to the vendor. */
   referrerPolicy?: HTMLAttributeReferrerPolicy;
+  /**
+   * Per-slot class overrides. A slot that receives a class gets NO default
+   * inline style — your CSS owns that slot entirely (inline styles would
+   * otherwise beat any class rule). For `placeholder` that includes the
+   * `width`/`height` sizing, so size it in your CSS.
+   */
+  classNames?: {
+    placeholder?: string;
+    thumbnail?: string;
+    title?: string;
+    button?: string;
+    iframe?: string;
+  };
 }
 
 /**
@@ -110,6 +123,7 @@ export function ConsentEmbed({
   privacyEnhanced = true,
   credentialless = true,
   referrerPolicy = 'strict-origin-when-cross-origin',
+  classNames = {},
 }: ConsentEmbedProps) {
   const { statusFor, grant } = useConsent();
   const granted = statusFor(category) === 'granted';
@@ -139,16 +153,31 @@ export function ConsentEmbed({
         (placeholder ? (
           placeholder({ grant: loadEmbed, title })
         ) : (
-          <div style={{ ...panelStyle, width, height }}>
+          <div
+            className={classNames.placeholder}
+            // A slot with a custom class gets no default inline style — inline
+            // styles would beat any class rule, making overrides impossible.
+            style={classNames.placeholder ? undefined : { ...panelStyle, width, height }}
+          >
             {thumbnailUrl ? (
               <img
                 src={thumbnailUrl}
                 alt=""
-                style={{ maxWidth: '100%', maxHeight: '50%', objectFit: 'contain' }}
+                className={classNames.thumbnail}
+                style={
+                  classNames.thumbnail
+                    ? undefined
+                    : { maxWidth: '100%', maxHeight: '50%', objectFit: 'contain' }
+                }
               />
             ) : null}
-            <span>{title}</span>
-            <button type="button" style={buttonStyle} onClick={loadEmbed}>
+            <span className={classNames.title}>{title}</span>
+            <button
+              type="button"
+              className={classNames.button}
+              style={classNames.button ? undefined : buttonStyle}
+              onClick={loadEmbed}
+            >
               Accept &amp; load
             </button>
           </div>
@@ -161,7 +190,8 @@ export function ConsentEmbed({
           height={height}
           allow={allow}
           referrerPolicy={referrerPolicy}
-          style={{ border: 0 }}
+          className={classNames.iframe}
+          style={classNames.iframe ? undefined : { border: 0 }}
           // `credentialless` isn't in React/TS's iframe attribute types yet; spread it in directly.
           {...(credentialless ? ({ credentialless: '' } as Record<string, string>) : {})}
         />

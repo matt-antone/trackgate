@@ -59,6 +59,22 @@ export interface DialogRenderApi {
   deny: () => void;
 }
 
+/**
+ * Per-slot class overrides for the default {@link ConsentDialog}. A slot that
+ * receives a class gets NO default inline style — your CSS owns that slot
+ * entirely (inline styles would otherwise beat any class rule). Slots without
+ * a class keep the built-in styling, still tunable via `--trackgate-*` vars.
+ */
+export interface ConsentDialogClassNames {
+  dialog?: string;
+  title?: string;
+  description?: string;
+  privacyPolicy?: string;
+  actions?: string;
+  acceptButton?: string;
+  declineButton?: string;
+}
+
 /** Props for the default {@link ConsentDialog}. */
 export interface ConsentDialogProps {
   title?: string;
@@ -66,6 +82,7 @@ export interface ConsentDialogProps {
   acceptLabel?: string;
   declineLabel?: string;
   privacyPolicyUrl?: string;
+  classNames?: ConsentDialogClassNames;
 }
 
 export interface ConsentProviderProps {
