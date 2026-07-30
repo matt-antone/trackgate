@@ -1,26 +1,11 @@
-import './dialogPolyfill';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ConsentProvider, ConsentEmbed, privacyEnhanceSrc, useConsent } from '../src/index';
+import { ConsentProvider, ConsentEmbed, privacyEnhanceSrc } from '../src/index';
 import type { ConsentRecord } from '../src/types';
+import { RevokeButton, acceptDialog } from './helpers';
 
 // AC17 — media embed facade.
-
-function RevokeButton() {
-  const { revoke } = useConsent();
-  return (
-    <button type="button" onClick={() => revoke()}>
-      Revoke
-    </button>
-  );
-}
-
-async function acceptDialog() {
-  const user = userEvent.setup();
-  const acceptButton = await screen.findByRole('button', { name: 'Accept' });
-  await user.click(acceptButton);
-}
 
 beforeEach(() => {
   window.localStorage.clear();

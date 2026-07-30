@@ -6,17 +6,6 @@ import { ConsentProvider } from '../src/ConsentProvider';
 import { ConsentGate } from '../src/ConsentGate';
 import { DEFAULT_STORAGE_KEY } from '../src/storage';
 
-// jsdom does not implement the native <dialog> element's showModal()/close();
-// the default ConsentDialog relies on it. Polyfill just enough for tests.
-if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.showModal) {
-  HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
-}
-
 const TRACKER_SCRIPT_SRC = 'https://tracker.example/tracker.js';
 const TRACKER_BEACON_URL = 'https://tracker.example/beacon';
 

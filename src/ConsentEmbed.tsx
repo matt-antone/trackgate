@@ -13,12 +13,6 @@ const VENDOR_THUMBNAIL_HOSTS = [
   'vimeo.com',
 ];
 
-function isVendorThumbnailHost(hostname: string): boolean {
-  return VENDOR_THUMBNAIL_HOSTS.some(
-    (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
-  );
-}
-
 export interface ConsentEmbedPlaceholderApi {
   grant: () => void;
   title: string;
@@ -127,7 +121,7 @@ export function ConsentEmbed({
     if (!isDev || !thumbnailUrl) return;
     try {
       const { hostname } = new URL(thumbnailUrl);
-      if (isVendorThumbnailHost(hostname)) {
+      if (VENDOR_THUMBNAIL_HOSTS.some((d) => hostname === d || hostname.endsWith(`.${d}`))) {
         console.warn(
           `[trackgate] thumbnailUrl "${thumbnailUrl}" points at a vendor-hosted image — ` +
             'the placeholder itself pings the vendor before consent. Self-host the thumbnail instead.',

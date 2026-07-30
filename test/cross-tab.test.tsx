@@ -1,28 +1,14 @@
-import './dialogPolyfill';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { ConsentProvider, ConsentGate, DEFAULT_STORAGE_KEY } from '../src/index';
 import type { ConsentRecord } from '../src/types';
+import { makeRecord } from './helpers';
 
 // AC14 — cross-tab sync. Simulate "another tab" by writing a valid record
 // directly to localStorage (bypassing this tab's provider) and then
 // dispatching a `storage` event on `window`, exactly as browsers do for
 // real cross-tab localStorage mutations (jsdom does not fire this
 // automatically for same-window writes).
-
-function makeRecord(
-  decision: 'granted' | 'denied',
-  overrides: Partial<ConsentRecord> = {},
-): ConsentRecord {
-  return {
-    categories: { default: decision },
-    policyVersion: '1',
-    timestamp: new Date().toISOString(),
-    method: 'dialog',
-    recordId: 'test-record-id',
-    ...overrides,
-  };
-}
 
 function writeFromOtherTab(record: ConsentRecord) {
   const value = JSON.stringify(record);
@@ -60,7 +46,7 @@ describe('cross-tab consent sync (AC14)', () => {
     expect(await screen.findByRole('dialog')).not.toBeNull();
     expect(screen.queryByTestId('tracked')).toBeNull();
 
-    writeFromOtherTab(makeRecord('granted'));
+    writeFromOtherTab(makeRecord({ categories: { default: 'granted' } }));
 
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).toBeNull();
@@ -85,13 +71,13 @@ describe('cross-tab consent sync (AC14)', () => {
     );
 
     // Establish granted state in this tab first.
-    writeFromOtherTab(makeRecord('granted'));
+    writeFromOtherTab(makeRecord({ categories: { default: 'granted' } }));
     await waitFor(() => {
       expect(screen.queryByTestId('tracked')).not.toBeNull();
     });
 
     // Now another tab revokes (denies) consent.
-    writeFromOtherTab(makeRecord('denied'));
+    writeFromOtherTab(makeRecord({ categories: { default: 'denied' } }));
 
     await waitFor(() => {
       expect(screen.queryByTestId('tracked')).toBeNull();
@@ -115,12 +101,12 @@ describe('cross-tab consent sync (AC14)', () => {
       </ConsentProvider>,
     );
 
-    writeFromOtherTab(makeRecord('granted'));
+    writeFromOtherTab(makeRecord({ categories: { default: 'granted' } }));
     await waitFor(() => {
       expect(screen.queryByTestId('tracked')).not.toBeNull();
     });
 
-    writeFromOtherTab(makeRecord('denied'));
+    writeFromOtherTab(makeRecord({ categories: { default: 'denied' } }));
 
     await waitFor(() => {
       expect(reloadSpy).toHaveBeenCalledTimes(1);

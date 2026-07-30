@@ -51,7 +51,7 @@ function isValidRecord(value: unknown): value is ConsentRecord {
   return true;
 }
 
-function aggregate(record: ConsentRecord): CategoryDecision {
+export function aggregateDecision(record: ConsentRecord): CategoryDecision {
   // Binary v1 UX: all configured categories share one decision. If any category
   // is denied, treat the record as denied (fail closed).
   const decisions = Object.values(record.categories);
@@ -94,7 +94,7 @@ export function readRecord(
   if (Number.isNaN(ts)) return null;
   const ageMs = Date.now() - ts;
 
-  const decision = aggregate(parsed);
+  const decision = aggregateDecision(parsed);
   if (decision === 'granted' && ttlDays != null && ageMs > ttlDays * DAY_MS) {
     return null;
   }
@@ -107,9 +107,4 @@ export function readRecord(
   }
 
   return parsed;
-}
-
-/** Aggregate a validated record to a single decision (exported for provider use). */
-export function aggregateDecision(record: ConsentRecord): CategoryDecision {
-  return aggregate(record);
 }

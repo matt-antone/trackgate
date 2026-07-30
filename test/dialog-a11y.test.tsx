@@ -1,7 +1,7 @@
 import { act } from 'react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { axe } from 'vitest-axe';
+import axe from 'axe-core';
 import { ConsentProvider } from '../src';
 import { useConsent } from '../src/useConsent';
 import { DEFAULT_STORAGE_KEY } from '../src/storage';
@@ -10,24 +10,6 @@ import { DEFAULT_STORAGE_KEY } from '../src/storage';
 // export (and its `extend-expect` entry point ships an empty file), so the
 // custom matcher can't be registered in a type-safe way. Assert on the raw
 // axe results (`violations` array) directly instead.
-
-// jsdom does not implement HTMLDialogElement.showModal()/close() (they are
-// simply absent from the prototype). Polyfill the minimal behavior the
-// component relies on: showModal() opens the dialog, close() closes it.
-// `open` itself IS implemented by jsdom (reflected content attribute), so we
-// can delegate to it.
-beforeAll(() => {
-  if (!HTMLDialogElement.prototype.showModal) {
-    HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
-      this.open = true;
-    };
-  }
-  if (!HTMLDialogElement.prototype.close) {
-    HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
-      this.open = false;
-    };
-  }
-});
 
 function StatusProbe() {
   const { status } = useConsent();
@@ -160,7 +142,7 @@ describe('Default consent dialog accessibility (AC9)', () => {
     // (landmark) rule — it fires because this isolated dialog fragment isn't
     // wrapped in a full page's landmark regions, a false positive unrelated
     // to the dialog's own markup/labelling.
-    const results = await axe(dialog, { rules: { region: { enabled: false } } });
+    const results = await axe.run(dialog, { rules: { region: { enabled: false } } });
     expect(results.violations).toHaveLength(0);
   });
 });
