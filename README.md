@@ -434,4 +434,4 @@ The built-in consent dialog is intentionally conservative so that naive, out-of-
 - Pressing `Esc` dismisses the dialog **without recording a decision** — status stays `pending`, and the dialog reappears on the next mount. Dismissal is never treated as acceptance.
 - The default dialog passes `axe` accessibility checks with no violations.
 
-If you override the dialog via the `dialog` render prop, keep these properties intact — weakening them weakens the legal basis for the consent you collect.
+If you override the dialog via the `dialog` render prop — or restyle it via `dialogProps.classNames` — keep these properties intact. Styling Accept more prominently than Decline is the classic dark pattern these defaults exist to avoid; weakening them weakens the legal basis for the consent you collect.
